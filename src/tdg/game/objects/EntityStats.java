@@ -61,7 +61,7 @@ public class EntityStats
 		stats.put("spellVamp", new Stats(0f, 0f, 100f));
 		// shield stat => add a "non health" shield with damages priority:
 		// damages reduces first shield and if damages > shield, the rest of
-		// damages reduces health; non affected by heal(); and don't affect
+		// damages reduces health; non affected by heal(); and does't affect
 		// spellVamp; shield works like another healthBar, with reduction...
 		stats.put("shieldMax", new Stats(0f, 0f));
 		for(Stats s : stats.values())
