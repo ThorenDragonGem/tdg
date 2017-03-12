@@ -52,6 +52,8 @@ public class Player extends Entity
 		stats.getStat("as").setBaseValue(10f);
 		stats.getStat("vampChance").setBaseValue(50f);
 		stats.getStat("spellVamp").setBaseValue(100f);
+		stats.getStat("power").setBaseValue(100);
+		stats.getStat("manaRegen").setBaseValue(2f);
 		stats.setShield(100);
 		stats.initAll();
 	}
@@ -60,8 +62,10 @@ public class Player extends Entity
 	public void input()
 	{
 		super.input();
+		// if(Gdx.input.isKeyJustPressed(Input.Keys.COMMA))
+		// stats.setShield(250);
 		if(Gdx.input.isKeyJustPressed(Input.Keys.COMMA))
-			stats.setShield(250);
+			stats.addLevel(1);
 		attacked = false;
 		attacking = false;
 		defending = false;
@@ -192,6 +196,7 @@ public class Player extends Entity
 		super.attack(entity);
 		attacking = true;
 		stats.addTempUp("strength", 0, 0.1f);
+		magicalDamages(1, 1, null);
 	}
 
 	@Override
@@ -215,7 +220,7 @@ public class Player extends Entity
 		renderer.rect(targetHUD.x, targetHUD.y, targetHUD.width, targetHUD.height);
 		renderer.setColor(Color.BLACK);
 		renderer.rect(entityHUD.x, entityHUD.y, entityHUD.width, entityHUD.height);
-		renderer.setColor(ColorFading.toGDXColor(ColorFading.blendColors(fadeColors, stats.target.stats.health / stats.target.stats.get("healthMax"))));
+		renderer.setColor(ColorFading.toGDXColor(ColorFading.blendColors(healthFadeColors, stats.target.stats.health / stats.target.stats.get("healthMax"))));
 		renderer.rect(healthHUD.x, healthHUD.y, stats.target.stats.health / stats.target.stats.get("healthMax") * healthHUD.width, healthHUD.height);
 		renderer.end();
 		// TODO: improve
@@ -239,8 +244,10 @@ public class Player extends Entity
 		batch.end();
 	}
 
-	private ColorFading.FadeColor[] fadeColors = new ColorFading.FadeColor[]
+	private ColorFading.FadeColor[] healthFadeColors = new ColorFading.FadeColor[]
 	{ new ColorFading.FadeColor(0.0f, new java.awt.Color(200, 25, 28)), new ColorFading.FadeColor(1.0f, new java.awt.Color(28, 200, 25)), new ColorFading.FadeColor(0.5f, new java.awt.Color(255, 165, 0)) };
+	private ColorFading.FadeColor[] manaFadeColors = new ColorFading.FadeColor[]
+	{ new ColorFading.FadeColor(0.0f, new java.awt.Color(25, 28, 200)), new ColorFading.FadeColor(1.0f, new java.awt.Color(30, 144, 255)) };
 
 	protected void drawHealthBar(ShapeRenderer renderer)
 	{
@@ -255,17 +262,23 @@ public class Player extends Entity
 		renderer.setColor(Color.DARK_GRAY);
 		renderer.rect(hud.x, hud.y, hud.width, hud.height);
 		stats.health = Mathf.minimize(stats.health, 0f);
-		renderer.setColor(ColorFading.toGDXColor(ColorFading.blendColors(fadeColors, stats.health / stats.get("healthMax"))));
-		renderer.rect(Config.width / 2 - Config.hudWidth / 2 + 10, 0, (Config.hudWidth - 20) * stats.health / stats.get("healthMax"), 20);
+		renderer.setColor(ColorFading.toGDXColor(ColorFading.blendColors(healthFadeColors, stats.health / stats.get("healthMax"))));
+		renderer.rect(Config.width / 2 - Config.hudWidth / 2 + 10, 40, (Config.hudWidth - 20) * stats.health / stats.get("healthMax"), 20);
 		renderer.setColor(new Color(Color.LIGHT_GRAY.r, Color.LIGHT_GRAY.g, Color.LIGHT_GRAY.b, 0.9f));
-		renderer.rect(Config.width / 2 - Config.hudWidth / 2 + 10, 0, (Config.hudWidth - 20) * stats.getShield() / stats.get("shieldMax"), 20);
-		String s = stats.getThousandsString(stats.health) + "/" + stats.getThousandsString(stats.get("healthMax"));
-		GlyphLayout layout = new GlyphLayout(Tales.font, s);
+		renderer.rect(Config.width / 2 - Config.hudWidth / 2 + 10, 40, (Config.hudWidth - 20) * stats.shield / stats.get("shieldMax"), 20);
+		renderer.setColor(ColorFading.toGDXColor(ColorFading.blendColors(manaFadeColors, stats.mana / stats.get("manaMax"))));
+		renderer.rect(Config.width / 2 - Config.hudWidth / 2 + 10, 10, (Config.hudWidth - 20) * stats.mana / stats.get("manaMax"), 20);
 		renderer.end();
 		batch.begin();
-		Tales.font.draw(batch, layout, hud.x + hud.width / 2 - layout.width / 2, hud.y + layout.height + 10 / 2);
+		String s = stats.getThousandsString(stats.health) + "/" + stats.getThousandsString(stats.get("healthMax"));
+		GlyphLayout layout = new GlyphLayout(Tales.font, s);
+		Tales.font.draw(batch, layout, hud.x + hud.width / 2 - layout.width / 2, hud.y + layout.height + 40 + 10 / 2);
 		layout.setText(Tales.font, "+" + stats.getThousandsString(stats.get("regen")));
-		Tales.font.draw(batch, layout, hud.x + hud.width - layout.width, hud.y + layout.height + 10 / 2);
+		Tales.font.draw(batch, layout, hud.x + hud.width - layout.width - 10, hud.y + layout.height + 40 + 10 / 2);
+		layout.setText(Tales.font, stats.getThousandsString(stats.mana) + "/" + stats.getThousandsString(stats.get("manaMax")));
+		Tales.font.draw(batch, layout, hud.x + hud.width / 2 - layout.width / 2, hud.y + layout.height + 10 + 10 / 2);
+		layout.setText(Tales.font, "+" + stats.getThousandsString(stats.get("manaRegen")));
+		Tales.font.draw(batch, layout, hud.x + hud.width - layout.width - 10, hud.y + layout.height + 10 + 10 / 2);
 		batch.end();
 		Tales.endAlpha();
 	}

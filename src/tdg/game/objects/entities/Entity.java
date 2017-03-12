@@ -66,6 +66,7 @@ public class Entity extends GameObject
 	public void update()
 	{
 		super.update();
+		System.out.println(stats.getLevel() + "  " + stats.calculateNextLevelXp());
 		attackCD = (int)(60f / stats.get("as"));
 		cd.setTime((int)((1 - stats.get("cdr")) * attackCD));
 		if(haflSecond % 30 == 0)
@@ -142,6 +143,7 @@ public class Entity extends GameObject
 	public void halfSeconddUpdate()
 	{
 		stats.heal(stats.get("regen") / 2f);
+		stats.mana(stats.get("manaRegen") / 2f);
 	}
 
 	/**
@@ -219,7 +221,8 @@ public class Entity extends GameObject
 		// TODO: different cases from passive and aggressive ?
 		// the target of this = entity (mostly stats.target);
 		stats.target = entity;
-		stats.damage(1f);
+		// magicalDamages(1f, 11, null);
+		physicalDamages(1f, null);
 	}
 
 	protected void defend()
@@ -338,5 +341,29 @@ public class Entity extends GameObject
 		float velocity = stats.get("velocity");
 		speedX += 500 * offsetX * velocity * Gdx.graphics.getDeltaTime();
 		speedY += 500 * offsetY * velocity * Gdx.graphics.getDeltaTime();
+	}
+
+	public void physicalDamages(float factor, Circle aoe)
+	{
+		if(aoe == null)
+		{
+			stats.physicalDamages(factor);
+		}
+		else
+		{
+			
+		}
+	}
+
+	public void magicalDamages(float factor, float manaCost, Circle aoe)
+	{
+		if(aoe == null)
+		{
+			stats.magicalDamages(factor, manaCost);
+		}
+		else
+		{
+
+		}
 	}
 }

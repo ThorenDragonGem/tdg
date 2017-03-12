@@ -18,10 +18,9 @@ public class EntityStats
 	private Map<String, Stats> stats;
 	public static Entity entity;
 	public Entity target;
-	public float health;
-	private int level;
-	private float shield;
-	private float totalXP;
+	public float health, mana, shield;
+	private int level, maxLevel;
+	private float nextLevelXp, totalXP;
 
 	public EntityStats(Entity e)
 	{
@@ -64,10 +63,19 @@ public class EntityStats
 		// damages reduces health; non affected by heal(); and does't affect
 		// spellVamp; shield works like another healthBar, with reduction...
 		stats.put("shieldMax", new Stats(0f, 0f));
+		// magic
+		stats.put("power", new Stats(0f, 0f));
+		stats.put("resistance", new Stats(0f, 0f));
+		stats.put("mpen", new Stats(0f, 0f, 100f));
+		stats.put("manaMax", new Stats(100f, 0f));
+		stats.put("manaRegen", new Stats(0f, 0f));
 		for(Stats s : stats.values())
 			attributes.put(s, new CopyOnWriteArrayList<Attribute>());
 		health = get("healthMax");
 		shield = get("shieldMax");
+		mana = get("manaMax");
+		level = 1;
+		totalXP = 0;
 	}
 
 	public void setShield(float amount)
@@ -84,11 +92,18 @@ public class EntityStats
 		this.health = Mathf.maximize(health, get("healthMax"));
 	}
 
-	public void damage(float factor)
+	public void mana(float amount)
+	{
+		amount = Mathf.abs(amount);
+		this.mana += amount;
+		this.mana = Mathf.maximize(mana, get("manaMax"));
+	}
+
+	public void physicalDamages(float factor)
 	{
 		if(target.defending)
 		{
-			float damages = calculateDamages(factor) * 0.15f;
+			float damages = calculatePhysicalDamages(factor) * 0.15f;
 			// shield damages
 			if(target.stats.shield > 0)
 			{
@@ -115,7 +130,7 @@ public class EntityStats
 		}
 		else
 		{
-			float damages = calculateDamages(factor);
+			float damages = calculatePhysicalDamages(factor);
 			// shield damages
 			if(target.stats.shield > 0)
 			{
@@ -144,29 +159,159 @@ public class EntityStats
 	}
 
 	// Entity damages its target => entity's strength and target's defense
-	private float calculatePenetration()
+	private float calculatePhysicalPenetration()
 	{
 		// TODO: if pen = 100
 		// => like 0 defense ? or huge reduction ? or as here N
 		float strength = get("strength");
-		float penetrationFactor = get("pen");
-		return (Mathf.sigm(2 * strength, penetrationFactor / 100) - strength);
+		float pen = get("pen");
+		return (Mathf.sigm(2 * strength, pen / 100) - strength);
 	}
 
-	private float calculateDamageReduction()
+	private float calculatePhysicalDamageReduction()
 	{
 		float defense = target.stats.get("defense");
 		float strength = get("strength");
 		return ((defense / 4) * (defense / 8)) / (strength + 1);
 	}
 
-	private float calculateDamages(float factor)
+	private float calculatePhysicalDamages(float factor)
 	{
 		float critRoulette = (int)Mathf.random(0f, 100f);
 		float strength = get("strength");
 		if(critRoulette <= get("critChance") && critRoulette != 0)
-			return ((strength * factor) / ((calculateDamageReduction() / 4) / (calculatePenetration() + 1) + 1)) * get("critDmg");
-		return (strength * factor) / ((calculateDamageReduction() / 4) / (calculatePenetration() + 1) + 1);
+			return ((strength * factor) / ((calculatePhysicalDamageReduction() / 4) / (calculatePhysicalPenetration() + 1) + 1)) * get("critDmg");
+		return (strength * factor) / ((calculatePhysicalDamageReduction() / 4) / (calculatePhysicalPenetration() + 1) + 1);
+	}
+
+	public void magicalDamages(float factor, float manaCost)
+	{
+		if(manaCost > mana)
+			return;
+		if(target.defending)
+		{
+			float damages = calculateMagicalDamages(factor) * 0.15f;
+			// shield damages
+			if(target.stats.shield > 0)
+			{
+				if(damages > target.stats.shield)
+				{
+					damages -= target.stats.shield;
+					target.stats.shield = 0;
+				}
+				else
+				{
+					target.stats.shield -= damages;
+					damages = 0;
+				}
+			}
+			// health damages
+			target.stats.health -= damages;
+			// spellVamp stuff
+			float vampRoulette = Mathf.random();
+			if(vampRoulette <= get("vampChance") / 100f && vampRoulette != 0)
+			{
+				float vampHeal = Mathf.random(0.75f, 1.25f) * damages * get("spellVamp") / 100;
+				heal(vampHeal);
+			}
+		}
+		else
+		{
+			float damages = calculateMagicalDamages(factor);
+			// shield damages
+			if(target.stats.shield > 0)
+			{
+				if(damages > target.stats.shield)
+				{
+					damages -= target.stats.shield;
+					target.stats.shield = 0;
+				}
+				else
+				{
+					target.stats.shield -= damages;
+					damages = 0;
+				}
+			}
+			// health damages
+			target.stats.health -= damages;
+			// spellVamp stuff
+			float vampRoulette = Mathf.random();
+			if(vampRoulette <= get("vampChance") / 100f && vampRoulette != 0)
+			{
+				float vampHeal = Mathf.random(0.75f, 1.25f) * damages * get("spellVamp");
+				heal(vampHeal);
+			}
+		}
+		health = Mathf.minimize(health, 0);
+		mana -= manaCost;
+	}
+
+	private float calculateMagicalPenetration()
+	{
+		float power = get("power");
+		float mpen = get("mpen");
+		return (Mathf.sigm(2 * power, mpen / 100) - power);
+	}
+
+	private float calculateMagicalDamageReduction()
+	{
+		float resistance = target.stats.get("resistance");
+		float power = get("power");
+		return ((resistance / 8) * (resistance / 16)) / (power + 1);
+	}
+
+	private float calculateMagicalDamages(float factor)
+	{
+		float critRoulette = (int)Mathf.random(0f, 100f);
+		float power = get("power");
+		if(critRoulette <= get("critChance") && critRoulette != 0)
+			return ((power * factor) / ((calculateMagicalDamageReduction() / 4) / (calculateMagicalPenetration() + 1) + 1)) * get("critDmg");
+		return ((power * factor) / ((calculateMagicalDamageReduction() / 4) / (calculateMagicalPenetration() + 1) + 1));
+	}
+
+	public void setXp(float amount)
+	{
+		// xp available to level up
+		float xp = amount;
+		// while xp amount greater than next level xp needed
+		while(xp > nextLevelXp)
+		{
+			float next = nextLevelXp;
+			// increment level by one
+			addLevel(1);
+			// subtract total xp available by the amount one xp needed for last level up
+			xp -= next;
+			nextLevelXp = calculateNextLevelXp();
+		}
+		totalXP = amount;
+	}
+
+	public void addXp(float amount)
+	{
+		setXp(totalXP + amount);
+	}
+
+	public void addLevel(int amount)
+	{
+		setLevel(level + amount);
+	}
+
+	public void setLevel(int level)
+	{
+		this.level = level;
+		nextLevelXp = calculateNextLevelXp();
+	}
+
+	public int getLevel()
+	{
+		return level;
+	}
+
+	public float calculateNextLevelXp()
+	{
+		// sequence: a(level) = 50 * 1.15^level
+		// starts to 1 and not 0 thus xp to level 2 is 50
+		return (int)(50 * Mathf.pow(1.05f, level - 1));
 	}
 
 	public void initAll()
@@ -250,16 +395,6 @@ public class EntityStats
 	// return -1;
 	// }
 
-	public int getLevel()
-	{
-		return level;
-	}
-
-	public void setLevel(int level)
-	{
-		this.level = level;
-	}
-
 	public float getTempUp(String s)
 	{
 		return stats.get(s).getTempUp();
@@ -336,10 +471,5 @@ public class EntityStats
 	public String getTwoDigits(float value)
 	{
 		return new DecimalFormat("##.00").format(value);
-	}
-
-	public float getShield()
-	{
-		return shield;
 	}
 }

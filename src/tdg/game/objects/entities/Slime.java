@@ -14,6 +14,7 @@ public class Slime extends Aggressive
 		stats.heal(Float.MAX_VALUE);
 		stats.getStat("as").setBaseValue(1f);
 		stats.getStat("strength").setBaseValue(100f);
+		stats.getStat("defense").setBaseValue(10000);
 	}
 
 	@Override
