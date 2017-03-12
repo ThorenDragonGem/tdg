@@ -37,9 +37,11 @@ public class EntityStats
 		stats.put("luck", new Stats(0f, 0f, 100f));
 		stats.put("healthMax", new Stats(100f, 1f));
 		stats.put("pen", new Stats(0f, 0f, 100f));
-		stats.put("regen", new Stats(1f, 0f));
-		stats.put("critChance", new Stats(0f, 0f));
+		stats.put("regen", new Stats(0f, 0f));
+		stats.put("critChance", new Stats(0f, 0f, 100f));
 		stats.put("critDmg", new Stats(2f, 0f));
+		stats.put("cdr", new Stats(0f, 0f, 100f));
+		stats.put("as", new Stats(1f, 0f));
 		for(Stats s : stats.values())
 			attributes.put(s, new CopyOnWriteArrayList<Attribute>());
 		health = get("healthMax");
@@ -54,9 +56,9 @@ public class EntityStats
 
 	public void damage(float factor)
 	{
-//		if(target.defending)
-		// target.stats.health -= calculateDamages(factor) * 0.15f;
-		// else
+		if(target.defending)
+			target.stats.health -= calculateDamages(factor) * 0.15f;
+		else
 			target.stats.health -= calculateDamages(factor);
 		health = Mathf.minimize(health, 0);
 	}
@@ -78,7 +80,10 @@ public class EntityStats
 
 	private float calculateDamages(float factor)
 	{
+		float critRoulette = (int)Mathf.random(0f, 100f);
 		float strength = get("strength");
+		if(critRoulette <= get("critChance") && critRoulette != 0)
+			return ((strength * factor) / ((calculateDamageReduction() / 4) / (calculatePenetration() + 1) + 1)) * get("critDmg");
 		return (strength * factor) / ((calculateDamageReduction() / 4) / (calculatePenetration() + 1) + 1);
 	}
 
@@ -214,6 +219,8 @@ public class EntityStats
 
 	public String getThousandsString(float value)
 	{
+		if(value == 0)
+			return "0,00";
 		int thousands = 0;
 		float res = value;
 		while(res >= 1000)

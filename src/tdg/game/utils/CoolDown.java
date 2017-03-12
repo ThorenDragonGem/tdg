@@ -62,11 +62,15 @@ public class CoolDown
 		return endTime;
 	}
 
-	public CoolDown setTime(int length)
+	public CoolDown setTimeAndRestart(int length)
 	{
 		this.length = length;
 		restart();
 		return this;
 	}
 
+	public void setTime(int length)
+	{
+		this.length = length;
+	}
 }

@@ -8,4 +8,6 @@ public class Config
 	public static int hudHeight = 100;
 	public static String title = "";
 	public static boolean healthBars = false;
+	public static double maxUps = 60;
+	public static double maxFps = 60;
 }

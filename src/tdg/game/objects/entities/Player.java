@@ -34,7 +34,6 @@ public class Player extends Entity
 	public Player(Material material, float x, float y, float width, float height)
 	{
 		super(material, x, y, width, height, Integer.MAX_VALUE);
-		cd.setTime(10);
 		solid = true;
 		inventory = new Inventory(7);
 		// inventoryGUI = new InventoryGUI(inventory, new
@@ -45,7 +44,11 @@ public class Player extends Entity
 		{ new Cell(0, 0, null), new Cell(64, 0, null), new Cell(128, 0, null), new Cell(192, 0, null), new Cell(256, 0, null), new Cell(320, 0, null), new Cell(384, 0, null), });
 		stats.addAttribute("defense", new Attribute(0));
 		stats.addAttribute("atr", new Attribute(100f));
-		stats.addAttribute("regen", new Attribute(10f));
+		stats.getStat("regen").setBaseValue(10f);
+		stats.getStat("critChance").setBaseValue(100f);
+		stats.getStat("critDmg").setBaseValue(1000f);
+		stats.getStat("cdr").setBaseValue(0);
+		stats.getStat("as").setBaseValue(2f);
 		stats.calculateAll();
 	}
 
@@ -105,6 +108,11 @@ public class Player extends Entity
 			for(Stats s : stats.getAttributes().keySet())
 				for(Attribute attribute : stats.getAttributes().get(s))
 					stats.removeAttribute(s, attribute);
+		if(Gdx.input.isKeyPressed(Input.Keys.SPACE))
+			defend();
+		if(!defending && Gdx.input.isButtonPressed(Input.Buttons.LEFT))
+			if(cd.isOver() && stats.target != null && Intersector.overlaps(new Circle(x + width / 2, y + height / 2, stats.get("atr")), stats.target.getBounds()))
+				attack(stats.target);
 	}
 
 	@Override
@@ -132,11 +140,6 @@ public class Player extends Entity
 		}
 		moveKeys = false;
 		moveMouse = false;
-		if(Gdx.input.isKeyPressed(Input.Keys.SPACE))
-			defend();
-		if(!defending && Gdx.input.isButtonPressed(Input.Buttons.LEFT))
-			if(cd.isOver() && stats.target != null && Intersector.overlaps(new Circle(x + width / 2, y + height / 2, stats.get("atr")), stats.target.getBounds()))
-				attack(stats.target);
 	}
 
 	private boolean getTargetInList()

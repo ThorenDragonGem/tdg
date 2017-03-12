@@ -7,7 +7,6 @@ import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.collision.Ray;
 
 import tdg.game.graphics.Material;
-import tdg.game.utils.CoolDown;
 import tdg.game.utils.Mathf;
 
 public class Aggressive extends Entity
@@ -15,7 +14,6 @@ public class Aggressive extends Entity
 	public Aggressive(Material material, float x, float y, float width, float height, int drawOrder)
 	{
 		super(material, x, y, width, height, (int)Mathf.maximize(drawOrder, 500));
-		cd = new CoolDown(0);
 		// draw order between 100 and 1500;
 		// aiManager.addAI("look", new LookAI(this, Player.class));
 	}

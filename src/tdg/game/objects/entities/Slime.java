@@ -9,10 +9,10 @@ public class Slime extends Aggressive
 	public Slime(float x, float y, float width, float height)
 	{
 		super(new Material(Tales.assets.getTexture("slime.png")), x, y, width, height, 1);
-		cd.setTime(10);
 		solid = true;
-		// stats.getStat("healthMax").setBaseValue(1000000f);
+		stats.getStat("healthMax").setBaseValue(1000000f);
 		stats.heal(Float.MAX_VALUE);
+		stats.getStat("as").setBaseValue(10f);
 	}
 
 	@Override

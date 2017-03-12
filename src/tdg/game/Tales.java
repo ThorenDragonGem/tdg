@@ -9,7 +9,6 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.Matrix4;
 
 import tdg.game.graphics.Material;
 import tdg.game.objects.GameObject;
@@ -33,10 +32,15 @@ public class Tales extends ApplicationAdapter
 	public static BitmapFont font;
 	private SpriteBatch masterBatch;
 	private ShapeRenderer masterRenderer;
+	private SpriteBatch hudBatch;
+	private ShapeRenderer hudRenderer;
 	private Player player;
 	private Block block;
 	private float camX, camY;
 	private boolean paused;
+	private long nanosPerLogicTick = (long)(1000000000 / Config.maxUps); // ~ dt
+	private long currentTime = System.nanoTime();
+	private long accumulator;
 
 	@Override
 	public void create()
@@ -49,6 +53,8 @@ public class Tales extends ApplicationAdapter
 		font = new BitmapFont();
 		masterBatch = new SpriteBatch();
 		masterRenderer = new ShapeRenderer();
+		hudBatch = new SpriteBatch();
+		hudRenderer = new ShapeRenderer();
 		masterRenderer.setAutoShapeType(true);
 		player = new Player(new Material(assets.getTexture("badlogic.jpg")), 0, 0, 64, 64);
 		// TODO: GameObjectFactory.java
@@ -176,21 +182,38 @@ public class Tales extends ApplicationAdapter
 			Manager.OBJECTS.update();
 	}
 
+	public void rendering()
+	{
+		Manager.OBJECTS.render(masterBatch, masterRenderer);
+		hudBatch.setProjectionMatrix(camera.combined.cpy().setToOrtho2D(0, 0, camera.viewportWidth, camera.viewportHeight));
+		hudRenderer.setProjectionMatrix(camera.combined.cpy().setToOrtho2D(0, 0, camera.viewportWidth, camera.viewportHeight));
+		player.renderHUD(hudBatch, hudRenderer);
+	}
+
 	@Override
 	public void render()
 	{
-		input();
-		update();
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
-		Manager.OBJECTS.render(masterBatch, masterRenderer);
 
-		Matrix4 uiMatrix = camera.combined.cpy();
-		uiMatrix.setToOrtho2D(0, 0, camera.viewportWidth, camera.viewportHeight);
-		masterBatch.setProjectionMatrix(uiMatrix);
-		masterRenderer.setProjectionMatrix(uiMatrix);
+		long newTime = System.nanoTime();
+		long frameTime = newTime - currentTime;
 
-		player.renderHUD(masterBatch, masterRenderer);
+		if(frameTime > nanosPerLogicTick)
+		{
+			frameTime = nanosPerLogicTick;
+		}
+
+		currentTime = newTime;
+		accumulator += frameTime;
+
+		while(accumulator >= nanosPerLogicTick)
+		{
+			input();
+			update();
+			accumulator -= nanosPerLogicTick;
+		}
+		rendering();
 	}
 
 	@Override

@@ -35,6 +35,7 @@ public class Entity extends GameObject
 	public boolean collided = false;
 	public boolean showInventory;
 	public boolean attacking, defending, attacked;
+	public int attackCD;
 	// public AIManager aiManager;
 
 	public Entity(Material material, float x, float y, float width, float height, int drawOrder)
@@ -42,8 +43,9 @@ public class Entity extends GameObject
 		super(material, x, y, width, height, (int)(1000 + Mathf.maximize(drawOrder, 9000)));
 		// drawOrder between 1000 and 10 000
 		// this.aiManager = new AIManager();
-		this.cd = new CoolDown(0);
 		this.stats = new EntityStats(this);
+		attackCD = (int)(60f / stats.get("as"));
+		this.cd = new CoolDown(attackCD);
 		this.inventory = new Inventory(0);
 		this.showInventory = true;
 	}
@@ -64,6 +66,8 @@ public class Entity extends GameObject
 	public void update()
 	{
 		super.update();
+		attackCD = (int)(60f / stats.get("as"));
+		cd.setTime((int)((1 - stats.get("cdr")) * attackCD));
 		if(haflSecond % 30 == 0)
 		{
 			halfSeconddUpdate();
