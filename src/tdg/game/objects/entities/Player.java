@@ -42,20 +42,26 @@ public class Player extends Entity
 		inventoryGUI = new InventoryGUI(inventory, new Material(Tales.assets.getTexture("shield.png")), 0, 0, 64);
 		inventoryGUI.setCells(new Cell[]
 		{ new Cell(0, 0, null), new Cell(64, 0, null), new Cell(128, 0, null), new Cell(192, 0, null), new Cell(256, 0, null), new Cell(320, 0, null), new Cell(384, 0, null), });
-		stats.addAttribute("defense", new Attribute(0));
+		stats.getStat("healthMax").setBaseValue(1000);
+		stats.addAttribute("defense", new Attribute(100));
 		stats.addAttribute("atr", new Attribute(100f));
-		stats.getStat("regen").setBaseValue(10f);
-		stats.getStat("critChance").setBaseValue(100f);
-		stats.getStat("critDmg").setBaseValue(1000f);
+		stats.getStat("regen").setBaseValue(0f);
+		stats.getStat("critChance").setBaseValue(0f);
+		stats.getStat("critDmg").setBaseValue(2f);
 		stats.getStat("cdr").setBaseValue(0);
-		stats.getStat("as").setBaseValue(2f);
-		stats.calculateAll();
+		stats.getStat("as").setBaseValue(10f);
+		stats.getStat("vampChance").setBaseValue(50f);
+		stats.getStat("spellVamp").setBaseValue(100f);
+		stats.setShield(100);
+		stats.initAll();
 	}
 
 	@Override
 	public void input()
 	{
 		super.input();
+		if(Gdx.input.isKeyJustPressed(Input.Keys.COMMA))
+			stats.setShield(250);
 		attacked = false;
 		attacking = false;
 		defending = false;
@@ -244,12 +250,15 @@ public class Player extends Entity
 	protected void drawPlayerHUD(SpriteBatch batch, ShapeRenderer renderer)
 	{
 		Rectangle hud = new Rectangle(Config.width / 2 - Config.hudWidth / 2, 0, Config.hudWidth, Config.hudHeight);
+		Tales.beginAlpha();
 		renderer.begin(ShapeType.Filled);
 		renderer.setColor(Color.DARK_GRAY);
 		renderer.rect(hud.x, hud.y, hud.width, hud.height);
 		stats.health = Mathf.minimize(stats.health, 0f);
 		renderer.setColor(ColorFading.toGDXColor(ColorFading.blendColors(fadeColors, stats.health / stats.get("healthMax"))));
 		renderer.rect(Config.width / 2 - Config.hudWidth / 2 + 10, 0, (Config.hudWidth - 20) * stats.health / stats.get("healthMax"), 20);
+		renderer.setColor(new Color(Color.LIGHT_GRAY.r, Color.LIGHT_GRAY.g, Color.LIGHT_GRAY.b, 0.9f));
+		renderer.rect(Config.width / 2 - Config.hudWidth / 2 + 10, 0, (Config.hudWidth - 20) * stats.getShield() / stats.get("shieldMax"), 20);
 		String s = stats.getThousandsString(stats.health) + "/" + stats.getThousandsString(stats.get("healthMax"));
 		GlyphLayout layout = new GlyphLayout(Tales.font, s);
 		renderer.end();
@@ -258,6 +267,7 @@ public class Player extends Entity
 		layout.setText(Tales.font, "+" + stats.getThousandsString(stats.get("regen")));
 		Tales.font.draw(batch, layout, hud.x + hud.width - layout.width, hud.y + layout.height + 10 / 2);
 		batch.end();
+		Tales.endAlpha();
 	}
 
 }

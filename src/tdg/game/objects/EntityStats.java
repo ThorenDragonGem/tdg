@@ -13,14 +13,15 @@ import tdg.game.utils.Mathf;
 
 public class EntityStats
 {
+	// TODO: change to Map<Stats, Map<String, Attribute>> ?
+	private Map<Stats, List<Attribute>> attributes;
+	private Map<String, Stats> stats;
 	public static Entity entity;
 	public Entity target;
 	public float health;
 	private int level;
+	private float shield;
 	private float totalXP;
-	// TODO: change to Map<Stats, Map<String, Attribute>> ?
-	private Map<Stats, List<Attribute>> attributes;
-	private Map<String, Stats> stats;
 
 	public EntityStats(Entity e)
 	{
@@ -28,23 +29,52 @@ public class EntityStats
 		target = null;
 		stats = new HashMap<String, Stats>();
 		attributes = new HashMap<Stats, List<Attribute>>();
-		// TODO: ATTACK_SPEED => CoolDown length;
+		// defense stat => damage reduction
 		stats.put("defense", new Stats(0f, 0f));
+		// strength stat => damages
 		stats.put("strength", new Stats(1f, 0f));
+		//speed stat
 		stats.put("velocity", new Stats(1f, 0f));
+		//attack range stat
 		stats.put("atr", new Stats(Mathf.sqrt(entity.width * entity.width + entity.height * entity.height) / 2, Mathf.sqrt(entity.width * entity.width + entity.height * entity.height) / 2));
+		//sight range stat => max distance an entity can look
 		stats.put("sgr", new Stats(500f, Mathf.sqrt(entity.width * entity.width + entity.height * entity.height) / 2));
+		//luck stat => influences stats growth and drop loots
 		stats.put("luck", new Stats(0f, 0f, 100f));
+		//max health stat => the maximum amount of health of the entity
 		stats.put("healthMax", new Stats(100f, 1f));
+		//physic penetration stat => influences damages reduction by penetrating the defense (in %)
 		stats.put("pen", new Stats(0f, 0f, 100f));
+		//regen stat => the amount of health regenerated each second (each 60 ticks)
 		stats.put("regen", new Stats(0f, 0f));
+		//critical chance stat => the probability of performing a critical hit (in %)
 		stats.put("critChance", new Stats(0f, 0f, 100f));
+		//critical damages => damages done while performing a critical hit: normal_damages * critical_damages
 		stats.put("critDmg", new Stats(2f, 0f));
-		stats.put("cdr", new Stats(0f, 0f, 100f));
+		// attack speed stat => the base length (before reduction, of CoolDown
 		stats.put("as", new Stats(1f, 0f));
+		// CoolDownReduction stat => reduction of the length of CoolDown (in %)
+		stats.put("cdr", new Stats(0f, 0f, 100f));
+		// SpellVamp chance stat => probability of healing entity when damaging target (in %)
+		stats.put("vampChance", new Stats(0f, 0f, 100f));
+		//SpellVamp stat => amount of damages performed transformed in health (in %) 
+		stats.put("spellVamp", new Stats(0f, 0f, 100f));
+		// shield stat => add a "non health" shield with damages priority:
+		// damages reduces first shield and if damages > shield, the rest of
+		// damages reduces health; non affected by heal(); and don't affect
+		// spellVamp; shield works like another healthBar, with reduction...
+		stats.put("shieldMax", new Stats(0f, 0f));
 		for(Stats s : stats.values())
 			attributes.put(s, new CopyOnWriteArrayList<Attribute>());
 		health = get("healthMax");
+		shield = get("shieldMax");
+	}
+
+	public void setShield(float amount)
+	{
+		amount = Mathf.abs(amount);
+		this.shield = amount;
+		getStat("shieldMax").setBaseValue(shield);
 	}
 
 	public void heal(float amount)
@@ -57,15 +87,67 @@ public class EntityStats
 	public void damage(float factor)
 	{
 		if(target.defending)
-			target.stats.health -= calculateDamages(factor) * 0.15f;
+		{
+			float damages = calculateDamages(factor) * 0.15f;
+			// shield damages
+			if(target.stats.shield > 0)
+			{
+				if(damages > target.stats.shield)
+				{
+					damages -= target.stats.shield;
+					target.stats.shield = 0;
+				}
+				else
+				{
+					target.stats.shield -= damages;
+					damages = 0;
+				}
+			}
+			// health damages
+			target.stats.health -= damages;
+			// spellVamp stuff
+			float vampRoulette = Mathf.random();
+			if(vampRoulette <= get("vampChance") / 100f && vampRoulette != 0)
+			{
+				float vampHeal = Mathf.random(0.75f, 1.25f) * damages * get("spellVamp") / 100;
+				heal(vampHeal);
+			}
+		}
 		else
-			target.stats.health -= calculateDamages(factor);
+		{
+			float damages = calculateDamages(factor);
+			// shield damages
+			if(target.stats.shield > 0)
+			{
+				if(damages > target.stats.shield)
+				{
+					damages -= target.stats.shield;
+					target.stats.shield = 0;
+				}
+				else
+				{
+					target.stats.shield -= damages;
+					damages = 0;
+				}
+			}
+			// health damages
+			target.stats.health -= damages;
+			// spellVamp stuff
+			float vampRoulette = Mathf.random();
+			if(vampRoulette <= get("vampChance") / 100f && vampRoulette != 0)
+			{
+				float vampHeal = Mathf.random(0.75f, 1.25f) * damages * get("spellVamp");
+				heal(vampHeal);
+			}
+		}
 		health = Mathf.minimize(health, 0);
 	}
 
 	// Entity damages its target => entity's strength and target's defense
 	private float calculatePenetration()
 	{
+		// TODO: if pen = 100
+		// => like 0 defense ? or huge reduction ? or as here N
 		float strength = get("strength");
 		float penetrationFactor = get("pen");
 		return (Mathf.sigm(2 * strength, penetrationFactor / 100) - strength);
@@ -85,6 +167,13 @@ public class EntityStats
 		if(critRoulette <= get("critChance") && critRoulette != 0)
 			return ((strength * factor) / ((calculateDamageReduction() / 4) / (calculatePenetration() + 1) + 1)) * get("critDmg");
 		return (strength * factor) / ((calculateDamageReduction() / 4) / (calculatePenetration() + 1) + 1);
+	}
+
+	public void initAll()
+	{
+		calculateAll();
+		health = get("healthMax");
+		shield = get("shieldMax");
 	}
 
 	public void calculateAll()
@@ -247,5 +336,10 @@ public class EntityStats
 	public String getTwoDigits(float value)
 	{
 		return new DecimalFormat("##.00").format(value);
+	}
+
+	public float getShield()
+	{
+		return shield;
 	}
 }

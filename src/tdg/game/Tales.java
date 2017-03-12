@@ -193,9 +193,8 @@ public class Tales extends ApplicationAdapter
 	@Override
 	public void render()
 	{
-		Gdx.gl.glClearColor(0, 0, 0, 1);
+		Gdx.gl.glClearColor(0, 0, 0, 1f);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
-
 		long newTime = System.nanoTime();
 		long frameTime = newTime - currentTime;
 
@@ -233,5 +232,16 @@ public class Tales extends ApplicationAdapter
 	public static void spawn(GameObject object)
 	{
 		Manager.OBJECTS.add(object);
+	}
+
+	public static void beginAlpha()
+	{
+		Gdx.gl.glEnable(GL20.GL_BLEND);
+		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+	}
+
+	public static void endAlpha()
+	{
+		Gdx.gl.glDisable(GL20.GL_BLEND);
 	}
 }
