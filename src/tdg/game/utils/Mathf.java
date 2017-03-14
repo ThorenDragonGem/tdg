@@ -138,6 +138,13 @@ public class Mathf
 		return value;
 	}
 
+	public static double maximize(double value, double max)
+	{
+		if(value > max)
+			value = max;
+		return value;
+	}
+
 	public static float minimize(float value, float min)
 	{
 		if(value < min)
@@ -145,7 +152,23 @@ public class Mathf
 		return value;
 	}
 
+	public static double minimize(double value, double min)
+	{
+		if(value < min)
+			value = min;
+		return value;
+	}
+
 	public static float minAndMax(float value, float min, float max)
+	{
+		if(value < min)
+			value = min;
+		if(value > max)
+			value = max;
+		return value;
+	}
+
+	public static double minAndMax(double value, double min, double max)
 	{
 		if(value < min)
 			value = min;
@@ -164,6 +187,11 @@ public class Mathf
 		return numerator / (1 + exp(-exponent));
 	}
 
+	public static double sigm(double numerator, double exponent)
+	{
+		return numerator / (1 + Math.exp(-exponent));
+	}
+
 	public static float getBiasedRandom(float bias, float min, float max)
 	{
 		float bias_depth_perc = 0.1f;
@@ -177,6 +205,26 @@ public class Mathf
 			min_bias = min;
 		float variance = (max_bias - min_bias) / 2;
 		float rndBiased = bias + (float)r.nextGaussian() * variance;
+		if(rndBiased > max)
+			rndBiased = max - (rndBiased - max);
+		if(rndBiased < min)
+			rndBiased = min + (min - rndBiased);
+		return rndBiased;
+	}
+
+	public static double getBiasedRandom(double bias, double min, double max)
+	{
+		double bias_depth_perc = 0.1f;
+		double bias_depth_abs = (max - min) * bias_depth_perc;
+		double min_bias = bias - bias_depth_abs;
+		double max_bias = bias + bias_depth_abs;
+		Random r = new Random();
+		if(max_bias > max)
+			max_bias = max;
+		if(min_bias < min)
+			min_bias = min;
+		double variance = (max_bias - min_bias) / 2;
+		double rndBiased = bias + (float)r.nextGaussian() * variance;
 		if(rndBiased > max)
 			rndBiased = max - (rndBiased - max);
 		if(rndBiased < min)

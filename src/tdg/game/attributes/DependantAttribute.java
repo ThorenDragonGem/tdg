@@ -7,7 +7,7 @@ public class DependantAttribute extends Attribute
 {
 	protected Map<String, Attribute> otherAttributes;
 
-	public DependantAttribute(float startingValue)
+	public DependantAttribute(double startingValue)
 	{
 		super(startingValue);
 		otherAttributes = new HashMap<String, Attribute>();
@@ -53,7 +53,7 @@ public class DependantAttribute extends Attribute
 	}
 
 	@Override
-	public float calculateValue()
+	public double calculateValue()
 	{
 		// specific attribute code goes here
 		finalValue = getBaseValue();

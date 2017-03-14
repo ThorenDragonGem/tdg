@@ -1,4 +1,4 @@
-package tdg.game.objects.entities;
+package tdg.game.objects.entities.players;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -18,10 +18,12 @@ import tdg.game.Tales;
 import tdg.game.attributes.Attribute;
 import tdg.game.graphics.Material;
 import tdg.game.objects.GameObject;
+import tdg.game.objects.entities.Entity;
 import tdg.game.objects.inventory.Cell;
 import tdg.game.objects.inventory.Inventory;
 import tdg.game.objects.inventory.InventoryGUI;
 import tdg.game.objects.items.Item;
+import tdg.game.stats.MonsterRank;
 import tdg.game.stats.Stats;
 import tdg.game.utils.ColorFading;
 import tdg.game.utils.Mathf;
@@ -33,7 +35,7 @@ public class Player extends Entity
 
 	public Player(Material material, float x, float y, float width, float height)
 	{
-		super(material, x, y, width, height, Integer.MAX_VALUE);
+		super(MonsterRank.BRONZE5, material, x, y, width, height, Integer.MAX_VALUE);
 		solid = true;
 		inventory = new Inventory(7);
 		// inventoryGUI = new InventoryGUI(inventory, new
@@ -42,8 +44,9 @@ public class Player extends Entity
 		inventoryGUI = new InventoryGUI(inventory, new Material(Tales.assets.getTexture("shield.png")), 0, 0, 64);
 		inventoryGUI.setCells(new Cell[]
 		{ new Cell(0, 0, null), new Cell(64, 0, null), new Cell(128, 0, null), new Cell(192, 0, null), new Cell(256, 0, null), new Cell(320, 0, null), new Cell(384, 0, null), });
-		stats.getStat("healthMax").setBaseValue(1000);
-		stats.addAttribute("defense", new Attribute(100));
+		stats.getStat("healthMax").setBaseValue(1000000);
+		stats.addAttribute("defense", new Attribute(100000));
+		stats.addAttribute("strength", new Attribute(10000));
 		stats.addAttribute("atr", new Attribute(100f));
 		stats.getStat("regen").setBaseValue(0f);
 		stats.getStat("critChance").setBaseValue(0f);
@@ -52,7 +55,9 @@ public class Player extends Entity
 		stats.getStat("as").setBaseValue(10f);
 		stats.getStat("vampChance").setBaseValue(50f);
 		stats.getStat("spellVamp").setBaseValue(100f);
+		//
 		stats.getStat("power").setBaseValue(100);
+		//
 		stats.getStat("manaRegen").setBaseValue(2f);
 		stats.setShield(100);
 		stats.initAll();
@@ -65,7 +70,7 @@ public class Player extends Entity
 		// if(Gdx.input.isKeyJustPressed(Input.Keys.COMMA))
 		// stats.setShield(250);
 		if(Gdx.input.isKeyJustPressed(Input.Keys.COMMA))
-			stats.addLevel(1);
+			stats.addLevel(99);
 		attacked = false;
 		attacking = false;
 		defending = false;
@@ -121,7 +126,7 @@ public class Player extends Entity
 		if(Gdx.input.isKeyPressed(Input.Keys.SPACE))
 			defend();
 		if(!defending && Gdx.input.isButtonPressed(Input.Buttons.LEFT))
-			if(cd.isOver() && stats.target != null && Intersector.overlaps(new Circle(x + width / 2, y + height / 2, stats.get("atr")), stats.target.getBounds()))
+			if(cd.isOver() && stats.target != null && Intersector.overlaps(new Circle(x + width / 2, y + height / 2, (float)stats.get("atr")), stats.target.getBounds()))
 				attack(stats.target);
 	}
 
@@ -170,7 +175,7 @@ public class Player extends Entity
 		super.render(batch, renderer);
 		batch.end();
 		renderer.begin(ShapeType.Line);
-		renderer.circle(x + width / 2, y + height / 2, stats.get("atr"));
+		renderer.circle(x + width / 2, y + height / 2, (float)stats.get("atr"));
 		if(getTargetInList())
 		{
 			renderer.set(ShapeType.Filled);
@@ -221,7 +226,7 @@ public class Player extends Entity
 		renderer.setColor(Color.BLACK);
 		renderer.rect(entityHUD.x, entityHUD.y, entityHUD.width, entityHUD.height);
 		renderer.setColor(ColorFading.toGDXColor(ColorFading.blendColors(healthFadeColors, stats.target.stats.health / stats.target.stats.get("healthMax"))));
-		renderer.rect(healthHUD.x, healthHUD.y, stats.target.stats.health / stats.target.stats.get("healthMax") * healthHUD.width, healthHUD.height);
+		renderer.rect(healthHUD.x, healthHUD.y, (float)(stats.target.stats.health / stats.target.stats.get("healthMax") * healthHUD.width), healthHUD.height);
 		renderer.end();
 		// TODO: improve
 		if(stats.target.material.getTexture() != null)
@@ -251,7 +256,7 @@ public class Player extends Entity
 
 	protected void drawHealthBar(ShapeRenderer renderer)
 	{
-		renderer.rect(x, y + height + 10, stats.health / stats.get("healthMax") * width, 10);
+		renderer.rect(x, y + height + 10, (float)(stats.health / stats.get("healthMax") * width), 10);
 	}
 
 	protected void drawPlayerHUD(SpriteBatch batch, ShapeRenderer renderer)
@@ -263,11 +268,11 @@ public class Player extends Entity
 		renderer.rect(hud.x, hud.y, hud.width, hud.height);
 		stats.health = Mathf.minimize(stats.health, 0f);
 		renderer.setColor(ColorFading.toGDXColor(ColorFading.blendColors(healthFadeColors, stats.health / stats.get("healthMax"))));
-		renderer.rect(Config.width / 2 - Config.hudWidth / 2 + 10, 40, (Config.hudWidth - 20) * stats.health / stats.get("healthMax"), 20);
+		renderer.rect(Config.width / 2 - Config.hudWidth / 2 + 10, 40, (Config.hudWidth - 20) * (float)(stats.health / stats.get("healthMax")), 20);
 		renderer.setColor(new Color(Color.LIGHT_GRAY.r, Color.LIGHT_GRAY.g, Color.LIGHT_GRAY.b, 0.9f));
-		renderer.rect(Config.width / 2 - Config.hudWidth / 2 + 10, 40, (Config.hudWidth - 20) * stats.shield / stats.get("shieldMax"), 20);
+		renderer.rect(Config.width / 2 - Config.hudWidth / 2 + 10, 40, (Config.hudWidth - 20) * (float)(stats.shield / stats.get("shieldMax")), 20);
 		renderer.setColor(ColorFading.toGDXColor(ColorFading.blendColors(manaFadeColors, stats.mana / stats.get("manaMax"))));
-		renderer.rect(Config.width / 2 - Config.hudWidth / 2 + 10, 10, (Config.hudWidth - 20) * stats.mana / stats.get("manaMax"), 20);
+		renderer.rect(Config.width / 2 - Config.hudWidth / 2 + 10, 10, (float)((Config.hudWidth - 20) * stats.mana / stats.get("manaMax")), 20);
 		renderer.end();
 		batch.begin();
 		String s = stats.getThousandsString(stats.health) + "/" + stats.getThousandsString(stats.get("healthMax"));

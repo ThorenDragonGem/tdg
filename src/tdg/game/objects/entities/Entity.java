@@ -16,17 +16,20 @@ import tdg.game.Manager;
 import tdg.game.graphics.Material;
 import tdg.game.objects.EntityStats;
 import tdg.game.objects.GameObject;
+import tdg.game.objects.entities.players.Player;
 import tdg.game.objects.inventory.Inventory;
 import tdg.game.objects.inventory.InventoryGUI;
 import tdg.game.objects.items.Equipment;
 import tdg.game.objects.items.Item;
 import tdg.game.objects.items.ItemStack;
+import tdg.game.stats.MonsterRank;
 import tdg.game.utils.CoolDown;
 import tdg.game.utils.Mathf;
 import tdg.game.utils.Physics;
 
 public class Entity extends GameObject
 {
+	public MonsterRank rank;
 	public Inventory inventory;
 	public InventoryGUI inventoryGUI;
 	public EntityStats stats;
@@ -38,12 +41,15 @@ public class Entity extends GameObject
 	public int attackCD;
 	// public AIManager aiManager;
 
-	public Entity(Material material, float x, float y, float width, float height, int drawOrder)
+	public Entity(MonsterRank rank, Material material, float x, float y, float width, float height, int drawOrder)
 	{
 		super(material, x, y, width, height, (int)(1000 + Mathf.maximize(drawOrder, 9000)));
 		// drawOrder between 1000 and 10 000
 		// this.aiManager = new AIManager();
+		this.rank = rank;
 		this.stats = new EntityStats(this);
+		if(this instanceof Slime)
+			stats.applyStatsForLevel();
 		attackCD = (int)(60f / stats.get("as"));
 		this.cd = new CoolDown(attackCD);
 		this.inventory = new Inventory(0);
@@ -66,7 +72,6 @@ public class Entity extends GameObject
 	public void update()
 	{
 		super.update();
-		System.out.println(stats.getLevel() + "  " + stats.calculateNextLevelXp());
 		attackCD = (int)(60f / stats.get("as"));
 		cd.setTime((int)((1 - stats.get("cdr")) * attackCD));
 		if(haflSecond % 30 == 0)
@@ -151,6 +156,11 @@ public class Entity extends GameObject
 	 */
 	public void postUpdate()
 	{
+		System.out.println(this + "  " + stats.toString());
+		if(this instanceof Slime)
+		{
+			stats.applyStatsForLevel();
+		}
 		inventory.update();
 		stats.health = Mathf.minimize(stats.health, 0f);
 		if(!stats.isAlive())
@@ -200,7 +210,7 @@ public class Entity extends GameObject
 
 	protected void look()
 	{
-		List<GameObject> objects = Physics.sphereCollide(new Circle(x + width / 2, y + height / 2, stats.get("sgr")));
+		List<GameObject> objects = Physics.sphereCollide(new Circle(x + width / 2, y + height / 2, (float)stats.get("sgr")));
 		for(GameObject o : objects)
 		{
 			if(!(o instanceof Player))
@@ -338,7 +348,7 @@ public class Entity extends GameObject
 
 	protected void move(float offsetX, float offsetY)
 	{
-		float velocity = stats.get("velocity");
+		double velocity = stats.get("velocity");
 		speedX += 500 * offsetX * velocity * Gdx.graphics.getDeltaTime();
 		speedY += 500 * offsetY * velocity * Gdx.graphics.getDeltaTime();
 	}
@@ -365,5 +375,10 @@ public class Entity extends GameObject
 		{
 
 		}
+	}
+
+	public MonsterRank getRank()
+	{
+		return rank;
 	}
 }

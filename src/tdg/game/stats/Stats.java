@@ -7,9 +7,10 @@ import tdg.game.utils.Mathf;
 
 public class Stats
 {
-	private float baseValue, currentValue, tempUp, min, max;
+	protected MonsterRank rank;
+	private double baseValue, currentValue, tempUp, min, max;
 
-	public Stats(float baseValue, float min, float max)
+	public Stats(double baseValue, double min, double max)
 	{
 		this.baseValue = baseValue;
 		this.currentValue = baseValue;
@@ -18,19 +19,19 @@ public class Stats
 		this.tempUp = 0;
 	}
 
-	public Stats(float baseValue, float min)
+	public Stats(double baseValue, double min)
 	{
-		this(baseValue, min, Float.MAX_VALUE);
+		this(baseValue, min, Double.MAX_VALUE);
 	}
 
-	public Stats(float baseValue)
+	public Stats(double baseValue)
 	{
-		this(baseValue, -Float.MAX_VALUE, Float.MAX_VALUE);
+		this(baseValue, -Double.MAX_VALUE, Double.MAX_VALUE);
 	}
 
-	public float calculateAttribute(List<Attribute> attributes)
+	public double calculateAttribute(List<Attribute> attributes)
 	{
-		float value = baseValue;
+		double value = baseValue;
 		for(Attribute attribute : attributes)
 			value += attribute.getFinalValue();
 		value = Mathf.minAndMax(value, min, max);
@@ -38,66 +39,71 @@ public class Stats
 		return value;
 	}
 
-	public float getBaseValue()
+	public double getBaseValue()
 	{
 		return baseValue;
 	}
 
-	public void setBaseValue(float baseValue)
+	public void setBaseValue(double baseValue)
 	{
 		baseValue = Mathf.minimize(baseValue, min);
 		baseValue = Mathf.maximize(baseValue, max);
 		this.baseValue = baseValue;
 	}
 
-	public void addBaseValue(float value)
+	public void addBaseValue(double value)
 	{
 		setBaseValue(baseValue + value);
 	}
 
-	public float getMin()
+	public double getMin()
 	{
 		return min;
 	}
 
-	public void setMin(float min)
+	public void setMin(double min)
 	{
 		this.min = min;
 	}
 
-	public float getMax()
+	public double getMax()
 	{
 		return max;
 	}
 
-	public void setMax(float max)
+	public void setMax(double max)
 	{
 		this.max = max;
 	}
 
-	public float getCurrentValue()
+	public double getCurrentValue()
 	{
 		return currentValue;
 	}
 
-	public void setCurrentValue(float curretnValue)
+	public void setCurrentValue(double currentValue)
 	{
-		this.currentValue = curretnValue;
+		this.currentValue = currentValue;
 	}
 
-	public float getTempUp()
+	public double getTempUp()
 	{
 		return tempUp;
 	}
 
-	public void setTempUp(float tempUp)
+	public void setTempUp(double tempUp)
 	{
 		this.tempUp = tempUp;
 	}
 
-	public void addTempUp(float value)
+	public void addTempUp(double value)
 	{
-		value = Mathf.minimize(value, 0);
+		value = Mathf.minimize((float)value, 0);
 		setTempUp(tempUp + value);
+	}
+
+	public MonsterRank getRank()
+	{
+		return rank;
 	}
 }

@@ -7,9 +7,9 @@ public class Attribute extends BaseAttribute
 {
 	protected List<RawBonus> rawBonuses;
 	protected List<FinalBonus> finalBonuses;
-	protected float finalValue;
+	protected double finalValue;
 
-	public Attribute(float startingValue)
+	public Attribute(double startingValue)
 	{
 		super(startingValue);
 		rawBonuses = new CopyOnWriteArrayList<RawBonus>();
@@ -44,8 +44,8 @@ public class Attribute extends BaseAttribute
 
 	protected void applyRawBonuses()
 	{
-		float rawBonusValue = 0;
-		float rawBonusMultiplier = 0;
+		double rawBonusValue = 0;
+		double rawBonusMultiplier = 0;
 		for(RawBonus bonus : rawBonuses)
 		{
 			rawBonusValue += bonus.getBaseValue();
@@ -58,8 +58,8 @@ public class Attribute extends BaseAttribute
 
 	protected void applyFinalBonuses()
 	{
-		float finalBonusValue = 0;
-		float finalBonusMultiplier = 0;
+		double finalBonusValue = 0;
+		double finalBonusMultiplier = 0;
 		for(FinalBonus bonus : finalBonuses)
 		{
 			finalBonusValue += bonus.getBaseValue();
@@ -70,7 +70,7 @@ public class Attribute extends BaseAttribute
 		finalValue *= (1 + finalBonusMultiplier);
 	}
 
-	public float calculateValue()
+	public double calculateValue()
 	{
 		// TODO: add getBaseMultiplier()
 		finalValue = getBaseValue();
@@ -96,7 +96,7 @@ public class Attribute extends BaseAttribute
 		return finalBonuses;
 	}
 
-	public float getFinalValue()
+	public double getFinalValue()
 	{
 		return calculateValue();
 	}

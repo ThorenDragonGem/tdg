@@ -2,26 +2,26 @@ package tdg.game.attributes;
 
 public class BaseAttribute
 {
-	private float baseValue;
-	private float baseMultiplier;
+	private double baseValue;
+	private double baseMultiplier;
 
-	public BaseAttribute(float value, float multiplier)
+	public BaseAttribute(double value, double multiplier)
 	{
 		this.baseValue = value;
 		this.baseMultiplier = multiplier;
 	}
 
-	public BaseAttribute(float value)
+	public BaseAttribute(double value)
 	{
 		this(value, 0);
 	}
 
-	public float getBaseValue()
+	public double getBaseValue()
 	{
 		return baseValue;
 	}
 
-	public float getBaseMultiplier()
+	public double getBaseMultiplier()
 	{
 		return baseMultiplier;
 	}

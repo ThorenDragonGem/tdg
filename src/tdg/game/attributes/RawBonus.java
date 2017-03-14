@@ -2,7 +2,7 @@ package tdg.game.attributes;
 
 public class RawBonus extends BaseAttribute
 {
-	public RawBonus(float value, float multiplier)
+	public RawBonus(double value, double multiplier)
 	{
 		super(value, multiplier);
 	}

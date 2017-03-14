@@ -7,13 +7,14 @@ import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.collision.Ray;
 
 import tdg.game.graphics.Material;
+import tdg.game.stats.MonsterRank;
 import tdg.game.utils.Mathf;
 
 public class Aggressive extends Entity
 {
-	public Aggressive(Material material, float x, float y, float width, float height, int drawOrder)
+	public Aggressive(MonsterRank rank, Material material, float x, float y, float width, float height, int drawOrder)
 	{
-		super(material, x, y, width, height, (int)Mathf.maximize(drawOrder, 500));
+		super(rank, material, x, y, width, height, (int)Mathf.maximize(drawOrder, 500));
 		// draw order between 100 and 1500;
 		// aiManager.addAI("look", new LookAI(this, Player.class));
 	}
@@ -34,12 +35,12 @@ public class Aggressive extends Entity
 		{
 			if(!cd.isActive())
 				cd.go();
-			if(Intersector.overlaps(new Circle(x + width / 2, y + width / 2, stats.get("atr")), stats.target.getBounds()))
+			if(Intersector.overlaps(new Circle(x + width / 2, y + width / 2, (float)stats.get("atr")), stats.target.getBounds()))
 			{
 				if(cd.isOver())
 					attack(stats.target);
 			}
-			else if(Intersector.overlaps(new Circle(x + width / 2, y + width / 2, stats.get("sgr")), stats.target.getBounds()))
+			else if(Intersector.overlaps(new Circle(x + width / 2, y + width / 2, (float)stats.get("sgr")), stats.target.getBounds()))
 			{
 				Ray ray = getRay(getCenterPosition3(), stats.target.getCenterPosition3());
 				// chase();

@@ -11,12 +11,11 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 import tdg.game.graphics.Material;
-import tdg.game.objects.GameObject;
 import tdg.game.objects.blocks.Block;
 import tdg.game.objects.blocks.GreenBlock;
-import tdg.game.objects.entities.Player;
 import tdg.game.objects.entities.RedCow;
 import tdg.game.objects.entities.Slime;
+import tdg.game.objects.entities.players.Player;
 import tdg.game.objects.items.BlueItem;
 import tdg.game.objects.items.GreenItem;
 import tdg.game.objects.items.RedItem;
@@ -58,29 +57,29 @@ public class Tales extends ApplicationAdapter
 		masterRenderer.setAutoShapeType(true);
 		player = new Player(new Material(assets.getTexture("badlogic.jpg")), 0, 0, 64, 64);
 		// TODO: GameObjectFactory.java
-		spawn(new GreenBlock(100, 100, 64, 64));
-		spawn(new GreenBlock(200, 100, 64, 64));
-		spawn(new GreenBlock(300, 100, 64, 64));
-		spawn(new GreenBlock(100, 200, 64, 64));
-		spawn(new GreenBlock(100, 300, 64, 64));
-		spawn(new GreenBlock(200, 200, 64, 64));
-		spawn(new GreenBlock(200, 300, 64, 64));
-		spawn(new GreenBlock(300, 200, 64, 64));
-		spawn(new GreenBlock(300, 300, 64, 64));
-		// spawn(new Slime(-200, -200, 64, 64));
-		// spawn(new Slime(-200, -300, 64, 64));
-		spawn(new Slime(-200, -400, 64, 64));
-		spawn(new RedCow(-300, 300, 32, 32));
+		Manager.place(new GreenBlock(100, 100, 64, 64));
+		Manager.place(new GreenBlock(200, 100, 64, 64));
+		Manager.place(new GreenBlock(300, 100, 64, 64));
+		Manager.place(new GreenBlock(100, 200, 64, 64));
+		Manager.place(new GreenBlock(100, 300, 64, 64));
+		Manager.place(new GreenBlock(200, 200, 64, 64));
+		Manager.place(new GreenBlock(200, 300, 64, 64));
+		Manager.place(new GreenBlock(300, 200, 64, 64));
+		Manager.place(new GreenBlock(300, 300, 64, 64));
+		// Manager.spawn(new Slime(-200, -200, 64, 64));
+		// Manager.spawn(new Slime(-200, -300, 64, 64));
+		Manager.spawn(new Slime(-200, -400, 64, 64));
+		Manager.spawn(new RedCow(-300, 300, 32, 32));
 		for(int i = 0; i < 1; i++)
 		{
-			spawn(new Sword(Mathf.random(-1 * Config.width, 1 * Config.width), Mathf.random(-1 * Config.height, 1 * Config.height), 32, 32));
-			spawn(new Shield(Mathf.random(-1 * Config.width, 1 * Config.width), Mathf.random(-1 * Config.height, 1 * Config.height), 32, 32));
-			spawn(new RedItem(Mathf.random(-1 * Config.width, 1 * Config.width), Mathf.random(-1 * Config.height, 1 * Config.height), 32, 32));
-			spawn(new BlueItem(Mathf.random(-1 * Config.width, 1 * Config.width), Mathf.random(-1 * Config.height, 1 * Config.height), 32, 32));
-			spawn(new GreenItem(Mathf.random(-1 * Config.width, 1 * Config.width), Mathf.random(-1 * Config.height, 1 * Config.height), 32, 32));
+			Manager.loot(new Sword(Mathf.random(-1 * Config.width, 1 * Config.width), Mathf.random(-1 * Config.height, 1 * Config.height), 32, 32));
+			Manager.loot(new Shield(Mathf.random(-1 * Config.width, 1 * Config.width), Mathf.random(-1 * Config.height, 1 * Config.height), 32, 32));
+			Manager.loot(new RedItem(Mathf.random(-1 * Config.width, 1 * Config.width), Mathf.random(-1 * Config.height, 1 * Config.height), 32, 32));
+			Manager.loot(new BlueItem(Mathf.random(-1 * Config.width, 1 * Config.width), Mathf.random(-1 * Config.height, 1 * Config.height), 32, 32));
+			Manager.loot(new GreenItem(Mathf.random(-1 * Config.width, 1 * Config.width), Mathf.random(-1 * Config.height, 1 * Config.height), 32, 32));
 		}
-		spawn(new Sword(Mathf.random(-1 * Config.width, 1 * Config.width), Mathf.random(-1 * Config.height, 1 * Config.height), 32, 32));
-		spawn(player);
+		Manager.loot(new Sword(Mathf.random(-1 * Config.width, 1 * Config.width), Mathf.random(-1 * Config.height, 1 * Config.height), 32, 32));
+		Manager.spawn(player);
 	}
 
 	public void input()
@@ -155,7 +154,7 @@ public class Tales extends ApplicationAdapter
 			}
 		});
 		if(Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_0))
-			spawn(new Slime(Mathf.random(-1 * Config.width, 1 * Config.width), Mathf.random(-1 * Config.height, 1 * Config.height), 32, 32));
+			Manager.spawn(new Slime(Mathf.random(-1 * Config.width, 1 * Config.width), Mathf.random(-1 * Config.height, 1 * Config.height), 32, 32));
 		if(!paused)
 			Manager.OBJECTS.input();
 	}
@@ -227,11 +226,6 @@ public class Tales extends ApplicationAdapter
 		super.resize(width, height);
 		Config.width = width;
 		Config.height = height;
-	}
-
-	public static void spawn(GameObject object)
-	{
-		Manager.OBJECTS.add(object);
 	}
 
 	public static void beginAlpha()

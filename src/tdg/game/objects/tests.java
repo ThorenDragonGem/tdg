@@ -8,6 +8,8 @@ public class tests
 {
 	public static void main(String[] args)
 	{
+		System.out.println(Math.exp(500));
+		return;
 		// long first = System.currentTimeMillis();
 		// float[] fs = new float[1000000];
 		// float luck = 100;
@@ -31,16 +33,16 @@ public class tests
 		// long time = f - first;
 		// System.out.println(time);
 
-		float a = 50;
-		float t = a;
-		for(int i = 1; i < 501; i++)
-		{
-			System.out.println(a);
-			System.out.println(50 * Mathf.pow(1.05f, i));
-			a = a * 1.05f;
-			t += a;
-		}
-		System.err.println(t);
+		// float a = 50;
+		// float t = a;
+		// for(int i = 1; i < 501; i++)
+		// {
+		// System.out.println(a);
+		// System.out.println(50 * Mathf.pow(1.05f, i));
+		// a = a * 1.05f;
+		// t += a;
+		// }
+		// System.err.println(t);
 	}
 
 	static Random r = new Random();

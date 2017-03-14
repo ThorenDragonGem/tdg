@@ -7,13 +7,13 @@ public class FinalBonus extends BaseAttribute
 	private CoolDown cd;
 	private Attribute parent;
 
-	public FinalBonus(float value, float multiplier)
+	public FinalBonus(double value, double multiplier)
 	{
 		super(value, multiplier);
 		cd = null;
 	}
 
-	public FinalBonus(float value, float multiplier, int time)
+	public FinalBonus(double value, double multiplier, int time)
 	{
 		super(value, multiplier);
 		cd = new CoolDown(time);
